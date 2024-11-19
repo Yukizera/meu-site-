@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Ouro com Efeito Pisca-Pisca</title>
+    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=_ynRzYts1Cj70fvjEdx_c7mGfJBZCVz5KnvHm1uOBwV91VTRNAlzzo9FY3pVidGETqfS8IuU2Oo4rmqYPnKDxw" charset="UTF-8"></script><style>
+        body {
+            background-image: url('https://lh3.googleusercontent.com/d/1aZkNtHRKeVqDytyKIFauJ9TqPyFSAsv3');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+            color: #ddd;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            overflow: hidden; /* Para evitar barras de rolagem */
+        }
+        .panel, .payment-info {
+            width: 22%;
+            padding: 20px;
+            border: 2px solid #00ff0c;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            margin: 20px;
+            display: inline-block;
+            vertical-align: top;
+            background-color: rgba(33, 33, 33, 0.9);
+            color: #ddd;
+            position: relative;
+
+        }
+        .payment-info {
+            width: 80%;
+            margin: 20px;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #ecff00;
+        }
+        input[type="number"], input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #444;
+            color: #ddd;
+            border: 2px solid #00ff0c;
+            border-radius: 5px;
+	
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #ecff00;
+        }
+        p {
+            margin: 10px 0;
+            padding: 0;
+            color: #ecff00;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff0000;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+			
+        }
+        .invisible-button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Estilos para flocos de neve */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none; /* Para que não interfira com cliques */
+        }
+
+        @keyframes blink {
+            0% { border-color: green; }
+            25% { border-color: blue; }
+            50% { border-color: red; }
+            75% { border-color: orange; }
+            100% { border-color: green; }
+        }
+    </style>
+    <script>
+        let exchangeRate = 5.81;
+        let pacoteQuantidades = {
+            1: 0, // Novo pacote de $1
+            3: 0,
+            10: 0,
+            30: 0,
+            50: 0,
+            100: 0
+        };
+
+        const pacotePrecos = {
+            1: 0.9, // Preço com desconto do pacote de $1
+            3: 2.65,
+            10: 7.5,
+            30: 22.00,
+            50: 36.00,
+            100: 72.00
+        };
+
+        function updatePacoteQuantidades(pacote, quantidade) {
+            pacoteQuantidades[pacote] = parseInt(quantidade) || 0;
+            updatePacoteTotals();
+            atualizarValoresComCartao();
+        }
+
+        function updatePacoteTotals() {
+            let totalR = 0;
+            let totalD = 0;
+            Object.keys(pacoteQuantidades).forEach(pacote => {
+                const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
+                const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                
+                document.getElementById(`totalR${pacote}`).innerText = subtotalR.toFixed(2);
+                document.getElementById(`totalD${pacote}`).innerText = subtotalD.toFixed(2);
+                totalR += subtotalR;
+                totalD += subtotalD;
+            });
+            document.getElementById('totalRPacotes').innerText = totalR.toFixed(2);
+            document.getElementById('totalDPacotes').innerText = totalD.toFixed(2);
+        }
+
+        function calcularTotalComCartao(total) {
+            return (total * 1.06).toFixed(2);
+        }
+
+        function atualizarValoresComCartao() {
+            const totalRPacotes = parseFloat(document.getElementById('totalRPacotes').innerText);
+            const totalDPacotes = parseFloat(document.getElementById('totalDPacotes').innerText);
+            document.getElementById('totalRPacotesCartao').innerText = calcularTotalComCartao(totalRPacotes);
+            document.getElementById('totalDPacotesCartao').innerText = calcularTotalComCartao(totalDPacotes);
+        }
+
+        function copiarInformacoes() {
+            let login = document.getElementById('login').value;
+            let password = document.getElementById('password').value;
+            let nickname = document.getElementById('nickname').value;
+            let level = document.getElementById('level').value;
+            let server = document.getElementById('server').value;
+
+            let texto = '';
+            if (login) texto += `Login: ${login}\n`;
+            if (password) texto += `Password: ${password}\n`;
+            if (nickname) texto += `Nickname: ${nickname}\n`;
+            if (level) texto += `Level: ${level}\n`;
+            if (server) texto += `Server: ${server}\n`;
+
+            let pacotesTexto = '';
+            let totalPacotesR = 0;
+            let totalPacotesD = 0;
+
+            Object.keys(pacoteQuantidades).forEach(pacote => {
+                if (pacoteQuantidades[pacote] > 0) {
+                    const subtotalR = pacoteQuantidades[pacote] * pacotePrecos[pacote] * exchangeRate;
+                    const subtotalD = pacoteQuantidades[pacote] * pacotePrecos[pacote];
+                    pacotesTexto += `Pacote de $${pacote}: ${pacoteQuantidades[pacote]} (Total R$${subtotalR.toFixed(2)})\n`;
+                    totalPacotesR += subtotalR;
+                    totalPacotesD += subtotalD;
+                }
+            });
+
+            if (pacotesTexto) {
+                texto += `\nPacotes:\n${pacotesTexto}`;
+            }
+
+            texto += `\nTotal dos Pacotes:\nTotal em R$: ${totalPacotesR.toFixed(2)}\nTotal em $: ${totalPacotesD.toFixed(2)}`;
+
+            if (texto) {
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('Informações copiadas para a área de transferência!');
+                }, () => {
+                    alert('Falha ao copiar as informações.');
+                });
+            }
+        }
+
+        window.addEventListener('load', () => {
+            atualizarValoresComCartao();
+        });
+		function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.style.width = Math.random() * 10 + 5 + 'px'; // Tamanho aleatório
+            snowflake.style.height = snowflake.style.width; // Mantém forma circular
+            snowflake.style.left = Math.random() * 100 + 'vw'; // Posição aleatória na horizontal
+            document.body.appendChild(snowflake);
+
+            // Animação de queda
+            const fallDuration = Math.random() * 3 + 2; // Dura entre 2 e 5 segundos
+            snowflake.style.animation = `fall ${fallDuration}s linear forwards`;
+
+            // Remove o floco de neve após a animação
+            snowflake.addEventListener('animationend', () => {
+                snowflake.remove();
+            });
+        }
+
+        // Chama a função para criar flocos de neve a cada 300ms
+        setInterval(createSnowflake, 300);
+
+        window.onload = function() {
+            document.getElementById('quantidadeOuro').value = 0;
+            updateOuroCalculations();
+        }
+		
+    </script>
+	<style>
+        @keyframes fall {
+            to {
+                transform: translateY(100vh); /* Move para o fundo da tela */
+            }
+        }
+    </style>
+	
+</head>
+<body>
+    <div class="panel">
+        <h2>Pacote de $1</h2>
+        <label for="pacote1">Quantidade:</label>
+        <input type="number" id="pacote1" value="0" oninput="updatePacoteQuantidades(1, this.value);"><br>
+        <p>Preço com desconto: $0.91</p>
+        <p>Total: R$<span id="totalR1">0.00</span> / $<span id="totalD1">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $3</h2>
+        <label for="pacote3">Quantidade:</label>
+        <input type="number" id="pacote3" value="0" oninput="updatePacoteQuantidades(3, this.value);"><br>
+        <p>Preço com desconto: $2.65</p>
+        <p>Total: R$<span id="totalR3">0.00</span> / $<span id="totalD3">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $10</h2>
+        <label for="pacote10">Quantidade:</label>
+        <input type="number" id="pacote10" value="0" oninput="updatePacoteQuantidades(10, this.value);"><br>
+        <p>Preço com desconto: $7.5</p>
+        <p>Total: R$<span id="totalR10">0.00</span> / $<span id="totalD10">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $30</h2>
+        <label for="pacote30">Quantidade:</label>
+        <input type="number" id="pacote30" value="0" oninput="updatePacoteQuantidades(30, this.value);"><br>
+        <p>Preço com desconto: $22.00</p>
+        <p>Total: R$<span id="totalR30">0.00</span> / $<span id="totalD30">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $50</h2>
+        <label for="pacote50">Quantidade:</label>
+        <input type="number" id="pacote50" value="0" oninput="updatePacoteQuantidades(50, this.value);"><br>
+        <p>Preço com desconto: $36.00</p>
+        <p>Total: R$<span id="totalR50">0.00</span> / $<span id="totalD50">0.00</span></p>
+    </div>
+    <div class="panel">
+        <h2>Pacote de $100</h2>
+        <label for="pacote100">Quantidade:</label>
+        <input type="number" id="pacote100" value="0" oninput="updatePacoteQuantidades(100, this.value);"><br>
+        <p>Preço com desconto: $72.00</p>
+        <p>Total: R$<span id="totalR100">0.00</span> / $<span id="totalD100">0.00</span></p>
+    </div>
+
+    <!-- Seção de Login -->
+    <div class="panel">
+        <h2>Login e Informações</h2>
+        <label for="login">Login:</label>
+        <input type="text" id="login"><br>
+        <label for="password">Password:</label>
+        <input type="text" id="password"><br>
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname"><br>
+        <label for="level">Level:</label>
+        <input type="text" id="level"><br>
+        <label for="server">Server:</label>
+        <input type="text" id="server"><br>
+    </div>
+
+    <!-- Seção Total -->
+    <div class="panel">
+        <h2>Total dos pacotes</h2>
+        <p>Total de Pacotes: R$<span id="totalRPacotes">0.00</span> / $<span id="totalDPacotes">0.00</span></p>
+        <p>Total com Cartão (6% a mais): R$<span id="totalRPacotesCartao">0.00</span> / $<span id="totalDPacotesCartao">0.00</span></p>
+        <button onclick="copiarInformacoes()">Copiar total + login</button>
+    </div>
+	
+    <div class="panel">
+        <h2>Informações de Pagamento</h2>
+        <p><strong>Pix:</strong> CELULAR 14988231270 Nome: Victoria Stefany</p>
+        <p><strong>Mercado Pago:</strong> <a href="https://link.mercadopago.com.br/ervindanada" target="_blank">https://link.mercadopago.com.br/ervindanada</a> (Preço será 6% mais caro)</p>
+        <p><strong>Binance:</strong> estrela203@hotmail.com</p>
+    </div>
+	
+
+</body>
+</html>
+
+    <style>
+        /* Estilo Geral (reutilizado e atualizado) */
+        body {
+            background-image: url('https://lh3.googleusercontent.com/d/1aZkNtHRKeVqDytyKIFauJ9TqPyFSAsv3');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+            color: #ddd;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .panel {
+            width: 80%;
+            padding: 20px;
+            border: 2px solid #00ff0c;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            margin: 20px;
+            background-color: rgba(33, 33, 33, 0.9);
+            color: #ddd;
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #ecff00;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px dashed #00ff0c;
+            border-radius: 5px;
+            background-color: #444;
+            color: #ddd;
+            cursor: pointer;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #ff0000;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Envio de Prints e Comprovantes de Pagamento</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                text-align: center;
+            }
+    
+            .form-container {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                margin-top: 50px;
+                max-width: 500px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+    
+            input[type="file"] {
+                padding: 10px;
+                margin-top: 10px;
+            }
+    
+            button {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                cursor: pointer;
+                margin-top: 20px;
+                border-radius: 5px;
+            }
+    
+            button:hover {
+                background-color: #45a049;
+            }
+        </style>
+    </head>
+    <body>
+    
+        <div class="form-container">
+            <h2>Envio de Prints e Comprovantes de Pagamento</h2>
+            <form action="https://seu-servidor.com/upload" method="POST" enctype="multipart/form-data">
+                <label for="print">Selecione o print do item:</label><br>
+                <input type="file" name="print" id="print" required><br><br>
+    
+                <label for="comprovante">Selecione o comprovante de pagamento:</label><br>
+                <input type="file" name="comprovante" id="comprovante" required><br><br>
+    
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+    
+    </body>
+    </html>
+    
+    
+    
+	
+</body>
+</html>
